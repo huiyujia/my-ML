@@ -1,0 +1,16 @@
+# 正则化版本
+def softmax_loss_vectorized(w,x,y,reg):
+    # 初始化
+    loss = 0.0
+    dw = np.zeros_like(w)
+    num_train , dim = x.shape
+
+    f = x.dot(w)
+    f_max = np.reshape(np.max(f,axis =1),(num_train,1))
+    prop = np.exp(f-f_max) / np.sum(np.exp(f-f_max),axis=1,keepdims=True)
+    y_trueclass = np.zeros_like(prop)
+    y_trueclass[range(num_train),y] = 1,0
+    loss += -np.sum(y_trueclass * np.log(prop)) / num_train + 0.5 * reg * np.sum(w * w)
+    dw += -np.dot(x.T ,y_trueclass-prop) /num_train + reg *w
+
+    return loss,dw
