@@ -1,5 +1,5 @@
 from svmloss import *
-from softmaxloss import *
+from softmax import *
 
 class LinearClassifier(object):    
 
