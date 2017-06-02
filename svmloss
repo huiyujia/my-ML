@@ -1,0 +1,56 @@
+# -*- coding: utf-8 -*-
+#__author__='jiahuiyu'
+
+import numpy as np
+def svm_loss_naive(w,x,y,reg):
+    # reg: (float) regularization strength
+    # 初始化梯度为0
+    dw = np.zeros(w.shape)
+    num_classes = w.shape[1]
+    num_train =w.shape[0]
+    loss = 0.0
+    for i in xrange(num_train):
+        scores = x[i].dot(w)
+        correct_class_score = scores[y[i]]
+        for j in xrange(num_classes):
+            if j == y[i]:
+                continue
+            margin = scores[j] - correct_class_score + 1 # delta = 1
+            if margin >0:
+                loss += margin
+                dw[:,y[i]] += -x[i,:]
+                dw[:,j] += x[i,:]
+                # Right now the loss is a sum over all training examples, but we want it
+                # to be an average instead so we divide by num_train.
+        loss /= num_train
+        dw /= num_train
+        # Add regularization to the loss.
+        loss += 0.5 * reg * np.sum(w * w)
+        dw += reg * w
+        return loss, dw
+
+
+def svm_loss_vectorized(W, X, y, reg):
+    """
+    Structured SVM loss function, vectorized implementation.Inputs and outputs 
+    are the same as svm_loss_naive.
+    """
+    loss = 0.0
+    dW = np.zeros(W.shape)  # initialize the gradient as zero
+    scores = X.dot(W)  # N by C
+    num_train = X.shape[0]
+    num_classes = W.shape[1]
+    scores_correct = scores[np.arange(num_train), y]  # 1 by N
+    scores_correct = np.reshape(scores_correct, (num_train, 1))  # N by 1
+    margins = scores - scores_correct + 1.0  # N by C
+    margins[np.arange(num_train), y] = 0.0
+    margins[margins <= 0] = 0.0
+    loss += np.sum(margins) / num_train
+    loss += 0.5 * reg * np.sum(W * W)
+    # compute the gradient
+    margins[margins > 0] = 1.0
+    row_sum = np.sum(margins, axis=1)  # 1 by N
+    margins[np.arange(num_train), y] = -row_sum
+    dW += np.dot(X.T, margins) / num_train + reg * W  # D by C
+
+    return loss, dW
